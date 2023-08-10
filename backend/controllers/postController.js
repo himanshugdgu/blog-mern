@@ -179,7 +179,7 @@ exports.getMyPosts = async (req, res) => {
       "author",
       "username"
     );
-      
+
     res.json(posts);
   } catch (error) {
     res

@@ -36,4 +36,3 @@ app.use("/api/like", likeRoutes);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

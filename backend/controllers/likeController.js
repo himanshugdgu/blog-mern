@@ -1,5 +1,6 @@
 const Post = require("../models/Post");
-
+const Like = require("../models/Like");
+const Dislike = require("../models/Dislike");
 // Controller function for adding a like to a post
 exports.addLike = async (req, res) => {
   try {
@@ -21,12 +22,24 @@ exports.addLike = async (req, res) => {
     if (post.dislikes.includes(userId)) {
       // If the user has previously disliked, remove the dislike
       await Post.findByIdAndUpdate(postId, { $pull: { dislikes: userId } });
+
+      // Delete the dislike document from the database
+      await Dislike.findOneAndDelete({ post: postId, user: userId });
     }
 
     // Add the user's ID to the likes array of the post
     await Post.findByIdAndUpdate(postId, { $push: { likes: userId } });
 
-    res.json({ message: "Post liked successfully." });
+    // Create a new like document in the database
+    const newLike = new Like({
+      post: postId,
+      user: userId,
+    });
+
+    // Save the like to the database
+    await newLike.save();
+
+    res.status(201).json({ message: "Like added successfully." });
   } catch (error) {
     res
       .status(500)
@@ -57,10 +70,22 @@ exports.addDislike = async (req, res) => {
     if (post.likes.includes(userId)) {
       // If the user has previously liked, remove the like
       await Post.findByIdAndUpdate(postId, { $pull: { likes: userId } });
+
+      // Delete the like document from the database
+      await Like.findOneAndDelete({ post: postId, user: userId });
     }
 
     // Add the user's ID to the dislikes array of the post
     await Post.findByIdAndUpdate(postId, { $push: { dislikes: userId } });
+
+    // Create a new dislike document in the database
+    const newDislike = new Dislike({
+      post: postId,
+      user: userId,
+    });
+
+    // Save the dislike to the database
+    await newDislike.save();
 
     res.json({ message: "Post disliked successfully." });
   } catch (error) {
@@ -89,6 +114,9 @@ exports.removeLike = async (req, res) => {
 
     // Remove the user's ID from the likes array of the post
     await Post.findByIdAndUpdate(postId, { $pull: { likes: userId } });
+
+    // Delete the like document from the database
+    await Like.findOneAndDelete({ post: postId, user: userId });
 
     res.json({ message: "Post like removed successfully." });
   } catch (error) {
@@ -119,6 +147,9 @@ exports.removeDislike = async (req, res) => {
 
     // Remove the user's ID from the dislikes array of the post
     await Post.findByIdAndUpdate(postId, { $pull: { dislikes: userId } });
+
+    // Delete the dislike document from the database
+    await Dislike.findOneAndDelete({ post: postId, user: userId });
 
     res.json({ message: "Post dislike removed successfully." });
   } catch (error) {

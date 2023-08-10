@@ -8,7 +8,7 @@ const { isLoggedIn } = require("../middlewares/isLoggedIn");
 
 const router = express.Router();
 
-router.route("/signup").post(registerUser);
+router.post("/signup", registerUser);
 router.post("/login", loginUser);
 router.route("/logout").get(logout);
 
